@@ -237,6 +237,11 @@ interface AttributeDescriptor {
     String referencedType();
 
     /**
+     * @return for associative attributes the Attribute being referenced.
+     */
+    String referencedAttribute();
+
+    /**
      * @return for associative attributes the table being referenced.
      */
     String referencedTable();

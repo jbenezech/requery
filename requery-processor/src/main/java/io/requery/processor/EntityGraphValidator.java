@@ -85,7 +85,7 @@ class EntityGraphValidator {
                         validator.warning(mappings.size() + " mappings found for: " +
                             attribute + " -> " + referenced.typeName());
                     }
-                } else {
+                } else if (attribute.referencedType() == null) {
                     validator.warning("Couldn't find referenced element for " + attribute);
                 }
             } else {
@@ -106,8 +106,10 @@ class EntityGraphValidator {
                         graph.referencingAttribute(attribute, referenced.get());
 
                     if (!referencedElement.isPresent()) {
-                        validator.warning("Couldn't find referenced element " +
-                                referenced.get().typeName() + " for " + attribute);
+                        if (attribute.referencedType() == null) {
+                            validator.warning("Couldn't find referenced element " + 
+                                    referenced.get().typeName() + " for " + attribute);
+                        }
                     } else {
                         // check all the foreign keys and see if they reference this entity
                         referenced.get().attributes().stream()
@@ -122,7 +124,7 @@ class EntityGraphValidator {
                                     entity.typeName() +  " and " + other.typeName(),
                                 ForeignKey.class));
                     }
-                } else if(attribute.cardinality() != null) {
+                } else if(attribute.cardinality() != null && attribute.referencedAttribute() == null) {
                     validator.error("Couldn't find referenced attribute " +
                             attribute.referencedColumn() + " for " + attribute);
                 }

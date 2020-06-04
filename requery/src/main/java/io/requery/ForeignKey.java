@@ -19,6 +19,7 @@ package io.requery;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import io.requery.meta.Attribute;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -57,4 +58,9 @@ public @interface ForeignKey {
      * @return referenced entity type (optional).
      */
     Class<?> references() default void.class;
+
+    /**
+    * @return referenced attribute (optional)
+    */
+    String referencesAttribute() default "ID";
 }

@@ -381,11 +381,14 @@ class EntityMetaGenerator extends EntityPartGenerator {
             builder.add(".setConverter(new $L())\n", attribute.converterName());
         }
         if (attribute.isForeignKey()) {
+
             builder.add(".setForeignKey($L)\n", attribute.isForeignKey());
 
             Optional<EntityDescriptor> referencedType = graph.referencingEntity(attribute);
-            referencedType.ifPresent(referenced -> {
 
+            if (referencedType.isPresent()) {
+
+                EntityDescriptor referenced = referencedType.get();
                 builder.add(".setReferencedClass($T.class)\n", referenced.isImmutable() ?
                         TypeName.get(referenced.element().asType()) :
                         nameResolver.typeNameOf(referenced));
@@ -394,6 +397,7 @@ class EntityMetaGenerator extends EntityPartGenerator {
                     referencedAttribute -> {
                         String name =
                                 upperCaseUnderscoreRemovePrefixes(referencedAttribute.fieldName());
+
                         TypeSpec provider = CodeGeneration.createAnonymousSupplier(
                             ClassName.get(Attribute.class),
                             CodeBlock.builder().addStatement("return $T.$L",
@@ -401,7 +405,23 @@ class EntityMetaGenerator extends EntityPartGenerator {
 
                         builder.add(".setReferencedAttribute($L)\n", provider);
                     });
-            });
+
+            } else if (attribute.referencedType() != null && attribute.referencedAttribute() != null) {
+
+                QualifiedName qualifiedName = new QualifiedName(attribute.referencedType());
+
+                builder.add(".setReferencedClass($N.class)\n", qualifiedName.toString());
+                String name = attribute.referencedAttribute();
+
+                TypeSpec provider = CodeGeneration.createAnonymousSupplier(
+                    ClassName.get(Attribute.class),
+                    CodeBlock.builder().addStatement("return $N.$L",
+                        qualifiedName.toString(), name).build());
+
+                builder.add(".setReferencedAttribute($L)\n", provider);
+
+            }
+
         }
         if (attribute.isIndexed()) {
             builder.add(".setIndexed($L)\n", attribute.isIndexed());

@@ -119,6 +119,7 @@ class AttributeMember extends BaseProcessableElement<Element> implements Attribu
     private ReferentialAction updateAction;
     private String referencedColumn;
     private String referencedType;
+    private String referencedAttribute;
     private String referencedTable;
     private String mappedBy;
     private String defaultValue;
@@ -479,16 +480,26 @@ class AttributeMember extends BaseProcessableElement<Element> implements Attribu
             processOrderBy();
         }
         if (isForeignKey()) {
+
             if (deleteAction == ReferentialAction.SET_NULL && !isNullable()) {
                 validator.error("Cannot SET_NULL on optional attribute", ForeignKey.class);
             }
             // user mirror so generated type can be referenced
             Optional<? extends AnnotationMirror> mirror =
                     Mirrors.findAnnotationMirror(element(), ForeignKey.class);
+
             if (mirror.isPresent()) {
+
                 referencedType = mirror.flatMap(m -> Mirrors.findAnnotationValue(m, "references"))
                         .map(value -> value.getValue().toString())
                         .orElse(null);
+
+                referencedAttribute = mirror.flatMap(m -> Mirrors.findAnnotationValue(m, "referencesAttribute"))
+                        .map(value -> {
+                            return value.getValue().toString();
+                        })
+                        .orElse(null);
+
             } else if (!typeMirror().getKind().isPrimitive()) {
                 referencedType = typeMirror().toString();
             }
@@ -835,6 +846,11 @@ class AttributeMember extends BaseProcessableElement<Element> implements Attribu
     @Override
     public String referencedType() {
         return referencedType;
+    }
+
+    @Override
+    public String referencedAttribute() {
+        return referencedAttribute;
     }
 
     @Override
