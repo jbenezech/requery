@@ -48,6 +48,7 @@ if (localProperties.exists()) {
 
 configure([project(':requery'), project(':requery-processor'), project(':requery-kotlin'), project(':requery-jackson')]) {
     apply plugin: 'java'
+    apply plugin: 'maven'
     apply plugin: 'maven-publish'
 
     javadoc.options.links("http://docs.oracle.com/javase/8/docs/api/");
@@ -137,28 +138,5 @@ configure([project(':requery'), project(':requery-processor'), project(':requery
                 }
             }
         }
-    }
-}
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    
-    sourceCompatibility = 1.8 // java 8
-    targetCompatibility = 1.8
-    
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-    
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-    
-    artifacts {
-        archives sourcesJar
-        archives javadocJar
     }
 }
