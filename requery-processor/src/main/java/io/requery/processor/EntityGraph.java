@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 class EntityGraph {
 
     private final Map<TypeElement, EntityDescriptor> entities;
+    private final Map<TypeElement, EntityDescriptor> allReferencedEntities;
     private final Map<TypeElement, ? extends EntityDescriptor> embeddedTypes;
     private final Types types;
 
@@ -46,6 +47,7 @@ class EntityGraph {
         this.types = types;
         this.embeddedTypes = embeddedTypes;
         this.entities = new HashMap<>();
+        this.allReferencedEntities = new HashMap<>();
     }
 
     /**
@@ -62,17 +64,16 @@ class EntityGraph {
      */
     public void add(EntityDescriptor entity) {
         entities.putIfAbsent(entity.element(), entity);
+        allReferencedEntities.putIfAbsent(entity.element(), entity);
     }
 
     /**
-     * Add a list of {@link EntityDescriptor} to this graph.
+     * Add a {@link EntityDescriptor} to this graph's referencing entities.
      *
-     * @param entities to add
+     * @param entity to add
      */
-    public void addAll(Collection<EntityDescriptor> entities) {
-        for (EntityDescriptor entity: entities) {
-            this.entities.putIfAbsent(entity.element(), entity);
-        }
+    public void addExternalEntity(EntityDescriptor entity) {
+        allReferencedEntities.putIfAbsent(entity.element(), entity);
     }
 
     Optional<EntityDescriptor> embeddedDescriptorOf(AttributeDescriptor attribute) {
@@ -86,7 +87,7 @@ class EntityGraph {
 
     private Optional<EntityDescriptor> entityByName(QualifiedName name) {
         boolean ignorePackage = Names.isEmpty(name.packageName());
-        for (EntityDescriptor entity : entities.values()) {
+        for (EntityDescriptor entity : allReferencedEntities.values()) {
             QualifiedName entityName = entity.typeName();
             if ((ignorePackage && entityName.className().equals(name.className())) ||
                 entityName.equals(name) || match(entity, name.className())) {
@@ -105,7 +106,7 @@ class EntityGraph {
     Optional<EntityDescriptor> referencingEntity(AttributeDescriptor attribute) {
         if (!Names.isEmpty(attribute.referencedTable())) {
             // match by table name
-            return entities.values().stream()
+            return allReferencedEntities.values().stream()
                 .filter(entity -> entity.tableName().equalsIgnoreCase(attribute.referencedTable()))
                 .findFirst();
 
@@ -127,7 +128,7 @@ class EntityGraph {
             TypeElement referencedElement = (TypeElement) types.asElement(referencedType);
             if (referencedElement != null) {
                 String referencedName = referencedElement.getSimpleName().toString();
-                return entities.values().stream()
+                return allReferencedEntities.values().stream()
                         .filter(entity -> match(entity, referencedName))
                         .findFirst();
             }

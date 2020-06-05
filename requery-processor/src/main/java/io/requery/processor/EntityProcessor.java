@@ -250,8 +250,6 @@ public final class EntityProcessor extends AbstractProcessor {
 
     private void postProcessGraphEntities(EntityGraph graph) {
 
-        Map<TypeElement, EntityDescriptor> externalEntities = new HashMap<>();
-
         for (EntityDescriptor entity: graph.entities()) {
             for(AttributeDescriptor attribute: entity.attributes()) {
                 if (!Names.isEmpty(attribute.referencedType()) &&
@@ -263,13 +261,12 @@ public final class EntityProcessor extends AbstractProcessor {
                         externalEntity.process(processingEnv);
                         EntityDescriptor descriptor = new EntityElementDelegate(externalEntity);
 
-                        externalEntities.putIfAbsent(descriptor.element(), descriptor);
+                        graph.addExternalEntity(descriptor);
 
                 }
             }
         }
 
-        graph.addAll(externalEntities.values());
     }
 
     private Optional<TypeElement> typeElementOf(Element element) {
