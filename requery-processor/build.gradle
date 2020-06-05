@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile 'com.github.jbenezech.requery:requery:master-SNAPSHOT'
+    compile project(':requery')
     compile "org.eclipse.persistence:javax.persistence:$jpa_version"
     compile 'com.squareup:javapoet:1.11.1'
 }

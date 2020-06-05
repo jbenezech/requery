@@ -48,6 +48,7 @@ if (localProperties.exists()) {
 
 configure([project(':requery'), project(':requery-processor'), project(':requery-kotlin'), project(':requery-jackson')]) {
     apply plugin: 'java'
+    apply plugin: 'maven'
     apply plugin: 'maven-publish'
 
     javadoc.options.links("http://docs.oracle.com/javase/8/docs/api/");
