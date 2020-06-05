@@ -64,6 +64,17 @@ class EntityGraph {
         entities.putIfAbsent(entity.element(), entity);
     }
 
+    /**
+     * Add a list of {@link EntityDescriptor} to this graph.
+     *
+     * @param entities to add
+     */
+    public void addAll(Collection<EntityDescriptor> entities) {
+        for (EntityDescriptor entity: entities) {
+            this.entities.putIfAbsent(entity.element(), entity);
+        }
+    }
+
     Optional<EntityDescriptor> embeddedDescriptorOf(AttributeDescriptor attribute) {
         TypeMirror mirror = attribute.typeMirror();
         Element element = types.asElement(mirror);

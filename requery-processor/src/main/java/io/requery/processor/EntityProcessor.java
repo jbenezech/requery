@@ -151,6 +151,9 @@ public final class EntityProcessor extends AbstractProcessor {
             validators.addAll(results);
         }
         for (EntityGraph graph : graphs.values()) {
+
+            postProcessGraphEntities(graph);
+
             EntityGraphValidator validator = new EntityGraphValidator(processingEnv, graph);
             Set<ElementValidator> results = validator.validate();
             validators.addAll(results);
@@ -243,6 +246,30 @@ public final class EntityProcessor extends AbstractProcessor {
         return Mirrors.findAnnotationMirror(element, Embedded.class).isPresent() ||
             (getOption(GENERATE_JPA, true) && Mirrors.findAnnotationMirror(element,
                 javax.persistence.Embeddable.class).isPresent());
+    }
+
+    private void postProcessGraphEntities(EntityGraph graph) {
+
+        Map<TypeElement, EntityDescriptor> externalEntities = new HashMap<>();
+
+        for (EntityDescriptor entity: graph.entities()) {
+            for(AttributeDescriptor attribute: entity.attributes()) {
+                if (!Names.isEmpty(attribute.referencedType()) &&
+                    !graph.referencingEntity(attribute).isPresent()) {
+
+                        TypeElement element = processingEnv.getElementUtils().getTypeElement(
+                            attribute.referencedType().toString());
+                        EntityType externalEntity = new EntityType(processingEnv, element);           
+                        externalEntity.process(processingEnv);
+                        EntityDescriptor descriptor = new EntityElementDelegate(externalEntity);
+
+                        externalEntities.putIfAbsent(descriptor.element(), descriptor);
+
+                }
+            }
+        }
+
+        graph.addAll(externalEntities.values());
     }
 
     private Optional<TypeElement> typeElementOf(Element element) {
